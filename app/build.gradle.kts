@@ -3,6 +3,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -80,5 +81,9 @@ dependencies {
 
     // JUnit
     testImplementation("junit:junit:4.13.2")
+
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
 
 }

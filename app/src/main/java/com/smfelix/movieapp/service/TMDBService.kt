@@ -1,5 +1,6 @@
 package com.smfelix.movieapp.service
 
+import com.smfelix.movieapp.BuildConfig
 import com.smfelix.movieapp.data.MovieResponse
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -22,7 +23,7 @@ fun provideTMDBService(): TMDBApiService {
         .addInterceptor { chain ->
             val original = chain.request()
             val url = original.url.newBuilder()
-                .addQueryParameter("api_key", "5644003154ef3a39c748897f59704ca3")
+                .addQueryParameter("api_key", BuildConfig.TMDB_API_KEY)
                 .build()
             val request = original.newBuilder().url(url).build()
             chain.proceed(request)

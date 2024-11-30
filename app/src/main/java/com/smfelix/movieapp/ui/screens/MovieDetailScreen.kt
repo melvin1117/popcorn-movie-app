@@ -1,4 +1,4 @@
-package com.smfelix.movieapp.ui.activities
+package com.smfelix.movieapp.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

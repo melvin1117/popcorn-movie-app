@@ -11,16 +11,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStore
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.smfelix.movieapp.ui.activities.MovieListScreen
-import com.smfelix.movieapp.ui.activities.MovieViewPager
+import com.smfelix.movieapp.ui.screens.MovieListScreen
+import com.smfelix.movieapp.ui.screens.MovieViewPager
 import com.smfelix.movieapp.ui.components.BottomNavBar
 import com.smfelix.movieapp.ui.components.TopBar
+import com.smfelix.movieapp.ui.screens.LoginScreen
+import com.smfelix.movieapp.ui.screens.SignupScreen
 import com.smfelix.movieapp.ui.viewmodels.MovieViewModel
 import com.smfelix.movieapp.ui.viewmodels.MovieViewModelFactory
 
@@ -37,34 +37,37 @@ class MainActivity : ComponentActivity() {
         val navController = rememberNavController()
         val currentRoute by navController.currentBackStackEntryAsState()
 
-        // Determine if TopBar and BottomNavBar should be displayed
-        val showBars = currentRoute?.destination?.route?.startsWith("movie_list") == true ||
-                currentRoute?.destination?.route?.startsWith("movie_details") == true
-
         Scaffold(
             topBar = {
-                if (showBars) {
+                if (currentRoute?.destination?.route != "login" &&
+                    currentRoute?.destination?.route != "signup") {
                     TopBar(navController)
                 }
             },
             bottomBar = {
-                if (showBars) {
+                if (currentRoute?.destination?.route != "login" &&
+                    currentRoute?.destination?.route != "signup") {
                     BottomNavBar(navController)
                 }
             }
         ) { paddingValues ->
             NavHost(
                 navController = navController,
-                startDestination = "movie_list/popular",
+                startDestination = "login", // Start with login screen
                 modifier = Modifier
                     .padding(paddingValues)
                     .background(colorResource(id = R.color.bgGray))
             ) {
+                composable("login") {
+                    LoginScreen(navController)
+                }
+                composable("signup") {
+                    SignupScreen(navController)
+                }
                 composable("movie_list/{category}") { backStackEntry ->
                     val category = backStackEntry.arguments?.getString("category") ?: "popular"
                     val viewModel = provideViewModel(category)
 
-                    // Pass the shared ViewModel to the MovieListScreen
                     MovieListScreen(viewModel = viewModel) { movie ->
                         navController.navigate("movie_details/${category}/${movie.id}")
                     }
@@ -74,7 +77,6 @@ class MainActivity : ComponentActivity() {
                     val movieId = backStackEntry.arguments?.getString("selectedMovieId")?.toLongOrNull() ?: 0L
                     val viewModel = provideViewModel(category)
 
-                    // Pass the shared ViewModel to the MovieViewPager
                     MovieViewPager(selectedMovieId = movieId, viewModel = viewModel)
                 }
             }

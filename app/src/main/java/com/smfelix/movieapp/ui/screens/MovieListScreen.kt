@@ -1,4 +1,4 @@
-package com.smfelix.movieapp.ui.activities
+package com.smfelix.movieapp.ui.screens
 
 import android.widget.Toast
 import androidx.compose.animation.core.Spring
@@ -21,7 +21,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.smfelix.movieapp.R
 import com.smfelix.movieapp.data.MovieData
 import com.smfelix.movieapp.ui.components.MovieCard

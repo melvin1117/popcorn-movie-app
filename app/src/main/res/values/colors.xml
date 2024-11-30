@@ -7,4 +7,5 @@
     <color name="lightGray">#949495</color>
     <color name="accent">#1e9ef3</color>
     <color name="star">#ffae38</color>
+    <color name="bgStar">#FFE2B7</color>
 </resources>

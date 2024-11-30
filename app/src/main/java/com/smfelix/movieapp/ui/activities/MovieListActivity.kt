@@ -30,8 +30,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun MovieListScreen(
-    onMovieClick: (MovieData) -> Unit,
-    viewModel: MovieViewModel = viewModel()
+    viewModel: MovieViewModel,
+    onMovieClick: (MovieData) -> Unit
 ) {
     val movieList = viewModel.movieList.value
     val selectedMovies = viewModel.selectedMovies.value

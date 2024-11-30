@@ -5,31 +5,40 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smfelix.movieapp.data.MovieData
-import com.smfelix.movieapp.service.RetrofitInstance
+import com.smfelix.movieapp.service.TMDBApiService
+import com.smfelix.movieapp.service.provideTMDBService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.UUID
 import kotlin.system.measureTimeMillis
 
-class MovieViewModel : ViewModel() {
-    var movieList = mutableStateOf(mutableStateListOf<MovieData>())
+class MovieViewModel(private val category: String) : ViewModel() {
+
+    private val apiService: TMDBApiService = provideTMDBService()
+    val movieList = mutableStateOf(mutableStateListOf<MovieData>())
     val selectedMovies = mutableStateOf(mutableStateListOf<MovieData>())
-    val isLoading = mutableStateOf(true)
+    val isLoading = mutableStateOf(false)
     var selectedMovieId = mutableStateOf<Long?>(null)
 
     init {
-        fetchMovies()
+        fetchMoviesIfNeeded()
     }
 
-    private fun fetchMovies() {
+    fun fetchMoviesIfNeeded() {
+        if (movieList.value.isNotEmpty()) return
+        isLoading.value = true
         viewModelScope.launch {
             try {
                 val timeTaken = measureTimeMillis {
-                    val response = RetrofitInstance.api.getPopularMovies()
+                    val response = when (category) {
+                        "popular" -> apiService.getPopularMovies()
+                        "top_rated" -> apiService.getTopRatedMovies()
+                        "now_playing" -> apiService.getNowPlayingMovies()
+                        else -> throw IllegalArgumentException("Invalid category: $category")
+                    }
                     movieList.value.clear()
                     movieList.value.addAll(response.results)
-                }
-
+            }
                 val delayTime = 1000 - timeTaken
                 if (delayTime > 0) {
                     delay(delayTime)

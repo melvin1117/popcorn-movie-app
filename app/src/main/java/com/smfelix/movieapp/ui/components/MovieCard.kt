@@ -6,12 +6,15 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -34,7 +37,10 @@ import java.util.Locale
 fun MovieCard(
     movie: MovieData,
     isChecked: Boolean,
+    showCheckbox: Boolean = false,
     onCheckedChange: () -> Unit,
+    isFavorite: Boolean,
+    onFavoriteToggle: () -> Unit,
     onMovieClick: () -> Unit,
     onLongPress: () -> Unit,
     modifier: Modifier = Modifier
@@ -60,99 +66,120 @@ fun MovieCard(
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(2.dp, glowBorder)
     ) {
-        Row(
-            modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = rememberAsyncImagePainter("https://image.tmdb.org/t/p/w185${movie.poster_path}"),
-                contentDescription = null,
+        Box(modifier = Modifier.fillMaxWidth()) {
+            // Top-right favorite icon button
+            IconButton(
+                onClick = { onFavoriteToggle() },
                 modifier = Modifier
-                    .height(100.dp)
-                    .width(75.dp)
-                    .clip(RoundedCornerShape(16.dp))
-            )
+                    .align(Alignment.TopEnd)
+                    .padding(0.dp)
+            ) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = null,
+                    tint = if (isFavorite) colorResource(id = R.color.red) else Color.Gray
+                )
+            }
 
-            Spacer(modifier = Modifier.width(8.dp))
-
-            // Movie Details
-            Column(modifier = Modifier.weight(1f)) {
-                // Movie Title
-                Text(
-                    text = movie.title,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    style = if (movie.vote_average >= 8.0) {
-                        TextStyle(
-                            color = Color.White,
-                            shadow = Shadow(
-                                color = colorResource(id = R.color.star),
-                                blurRadius = 10f
-                            )
-                        )
-                    } else {
-                        TextStyle(color = Color.White)
-                    }
+            Row(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Movie poster
+                Image(
+                    painter = rememberAsyncImagePainter("https://image.tmdb.org/t/p/w185${movie.poster_path}"),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .height(100.dp)
+                        .width(75.dp)
+                        .clip(RoundedCornerShape(16.dp))
                 )
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.width(8.dp))
 
-                Text(
-                    text = movie.overview,
-                    color = Color.Gray,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Filled.Star,
-                        contentDescription = "Star",
-                        tint = colorResource(id = R.color.star),
-                        modifier = Modifier.size(16.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(4.dp))
-
+                // Movie details
+                Column(modifier = Modifier.weight(1f)) {
+                    // Movie title
                     Text(
-                        text = String.format(Locale.getDefault(), "%.1f/10", movie.vote_average),
+                        text = movie.title,
                         color = Color.White,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        style = if (movie.vote_average >= 8.0) {
+                            TextStyle(
+                                color = Color.White,
+                                shadow = Shadow(
+                                    color = colorResource(id = R.color.star),
+                                    blurRadius = 10f
+                                )
+                            )
+                        } else {
+                            TextStyle(color = Color.White)
+                        }
                     )
 
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
 
+                    // Movie overview
                     Text(
-                        text = "|",
+                        text = movie.overview,
                         color = Color.Gray,
-                        fontWeight = FontWeight.Normal
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
 
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                    Text(
-                        text = "${movie.vote_count} votes",
-                        color = Color.Gray,
-                        fontWeight = FontWeight.Normal
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Filled.Star,
+                            contentDescription = "Star",
+                            tint = colorResource(id = R.color.star),
+                            modifier = Modifier.size(16.dp)
+                        )
+
+                        Spacer(modifier = Modifier.width(4.dp))
+
+                        Text(
+                            text = String.format(Locale.getDefault(), "%.1f/10", movie.vote_average),
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(modifier = Modifier.width(6.dp))
+
+                        Text(
+                            text = "|",
+                            color = Color.Gray,
+                            fontWeight = FontWeight.Normal
+                        )
+
+                        Spacer(modifier = Modifier.width(6.dp))
+
+                        Text(
+                            text = "${movie.vote_count} votes",
+                            color = Color.Gray,
+                            fontWeight = FontWeight.Normal
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                if (showCheckbox) {
+                    Checkbox(
+                        checked = isChecked,
+                        onCheckedChange = { onCheckedChange() },
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = colorResource(id = R.color.accent),
+                            uncheckedColor = colorResource(id = R.color.lightGray),
+                            checkmarkColor = Color.White
+                        )
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Checkbox(
-                checked = isChecked,
-                onCheckedChange = { onCheckedChange() },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = colorResource(id = R.color.accent),
-                    uncheckedColor = colorResource(id = R.color.lightGray),
-                    checkmarkColor = Color.White
-                )
-            )
         }
     }
 }
+

@@ -86,4 +86,10 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
 
+    // Firebase Realtime Database
+    implementation(libs.firebase.database)
+
+    // Firebase Storage
+    implementation(libs.firebase.storage)
+
 }

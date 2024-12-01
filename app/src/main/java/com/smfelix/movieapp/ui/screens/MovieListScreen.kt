@@ -30,7 +30,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun MovieListScreen(
     viewModel: MovieViewModel,
-    onMovieClick: (MovieData) -> Unit
+    onMovieClick: (MovieData) -> Unit,
+    onFavoriteToggle: (Long) -> Unit,
+    favoriteMovieIds: Set<Long>
 ) {
     val movieList = viewModel.movieList.value
     val selectedMovies = viewModel.selectedMovies.value
@@ -132,10 +134,12 @@ fun MovieListScreen(
             ) {
                 itemsIndexed(items = movieList, key = { _, item -> item.id }) { _, movie ->
                     val isChecked = selectedMovies.contains(movie)
+                    val isFavorite = favoriteMovieIds.contains(movie.id)
 
                     MovieCard(
                         movie = movie,
                         isChecked = isChecked,
+                        showCheckbox = true,
                         onCheckedChange = {
                             if (isChecked) {
                                 selectedMovies.remove(movie)
@@ -157,7 +161,11 @@ fun MovieListScreen(
                                 fadeInSpec = fadeInSpec,
                                 placementSpec = placementSpec,
                                 fadeOutSpec = fadeOutSpec
-                            )
+                            ),
+                        onFavoriteToggle = {
+                            onFavoriteToggle(movie.id)
+                        },
+                        isFavorite = isFavorite
                     )
                 }
             }

@@ -7,20 +7,25 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.google.firebase.auth.FirebaseAuth
 import com.smfelix.movieapp.R
+import com.smfelix.movieapp.data.User
+import com.smfelix.movieapp.service.AuthService
 
 @Composable
-fun SignupScreen(navController: NavController) {
+fun SignupScreen(navController: NavController, authService: AuthService, onUserCreated: (User) -> Unit) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+    var generalError by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
 
     Column(
@@ -30,12 +35,10 @@ fun SignupScreen(navController: NavController) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // App Logo and Name
         Image(
             painter = painterResource(id = R.drawable.ic_launcher_round),
             contentDescription = "App Logo",
-            modifier = Modifier
-                .size(72.dp)
+            modifier = Modifier.size(72.dp)
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
@@ -45,11 +48,11 @@ fun SignupScreen(navController: NavController) {
         )
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Input Fields
         TextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = { email = it; emailError = null },
             label = { Text("Email") },
+            isError = emailError != null,
             modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.colors(
                 cursorColor = colorResource(id = R.color.accent),
@@ -58,12 +61,17 @@ fun SignupScreen(navController: NavController) {
                 focusedIndicatorColor = colorResource(id = R.color.accent)
             )
         )
+        if (emailError != null) {
+            Text(text = emailError!!, color = colorResource(id = R.color.red), fontSize = 12.sp)
+        }
         Spacer(modifier = Modifier.height(8.dp))
 
+        
         TextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = { password = it; passwordError = null },
             label = { Text("Password") },
+            isError = passwordError != null,
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation(),
             colors = TextFieldDefaults.colors(
@@ -73,31 +81,55 @@ fun SignupScreen(navController: NavController) {
                 focusedIndicatorColor = colorResource(id = R.color.accent)
             )
         )
+        if (passwordError != null) {
+            Text(text = passwordError!!, color = colorResource(id = R.color.red), fontSize = 12.sp)
+        }
         Spacer(modifier = Modifier.height(16.dp))
 
-        errorMessage?.let {
-            Text(
-                text = it,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(8.dp)
-            )
+        generalError?.let {
+            Text(text = it, color = colorResource(id = R.color.red), fontSize = 14.sp, modifier = Modifier.padding(bottom = 8.dp))
         }
 
-        // Signup Button
         Button(
             onClick = {
-                FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            Toast.makeText(context, "Signup successful! Please login.", Toast.LENGTH_SHORT).show()
-                            navController.navigate("login") {
-                                popUpTo("signup") { inclusive = true }
+                emailError = if (email.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    "Invalid email address"
+                } else null
+
+                passwordError = if (password.length < 6) {
+                    "Password must be at least 6 characters"
+                } else null
+
+                if (emailError == null && passwordError == null) {
+                    authService.signupUser(email, password) { success, userId, error ->
+                        if (success && userId != null) {
+                            val newUser = User(
+                                userId = userId,
+                                name = "",
+                                email = email,
+                                profilePhotoUrl = null,
+                                dateOfBirth = "",
+                                gender = "",
+                                mobileNumber = "",
+                                shortBio = "",
+                                favorites = emptyList()
+                            )
+                            authService.updateUserProfile(userId, newUser) { updateSuccess, _ ->
+                                if (updateSuccess) {
+                                    Toast.makeText(context, "Signup successful!", Toast.LENGTH_SHORT).show()
+                                    onUserCreated(newUser)
+                                    navController.navigate("user_profile") {
+                                        popUpTo("signup") { inclusive = true }
+                                    }
+                                } else {
+                                    generalError = "Failed to save user data."
+                                }
                             }
                         } else {
-                            errorMessage = task.exception?.localizedMessage ?: "Signup failed"
-                            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                            generalError = error
                         }
                     }
+                }
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.accent))
@@ -106,8 +138,6 @@ fun SignupScreen(navController: NavController) {
         }
 
         Spacer(modifier = Modifier.height(8.dp))
-
-        // Navigate to Login
         TextButton(onClick = { navController.navigate("login") }) {
             Text(text = "Already have an account? Login", color = colorResource(id = R.color.accent))
         }

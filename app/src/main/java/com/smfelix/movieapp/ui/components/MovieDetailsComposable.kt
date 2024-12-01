@@ -8,9 +8,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.rounded.DateRange
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableFloatStateOf
@@ -35,7 +38,11 @@ import com.smfelix.movieapp.utils.getLanguageName
 import java.util.*
 
 @Composable
-fun MovieDetailsComposable(movie: MovieData) {
+fun MovieDetailsComposable(
+    movie: MovieData,
+    isFavorite: Boolean,
+    onFavoriteToggle: () -> Unit
+) {
     val releaseDateFormatted = formatDate(movie.release_date)
     val originalLanguageFormatted = getLanguageName(movie.original_language)
     val rating = remember { mutableFloatStateOf(movie.vote_average.toFloat() / 1) }
@@ -85,6 +92,20 @@ fun MovieDetailsComposable(movie: MovieData) {
                         .padding(horizontal = 24.dp, vertical = 12.dp)
                 )
             }
+            // Favorite Icon Button
+            IconButton(
+                onClick = { onFavoriteToggle() },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
+            ) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = null,
+                    tint = if (isFavorite) colorResource(id = R.color.red) else Color.Gray
+                )
+            }
+
         }
 
         Column(
@@ -98,20 +119,20 @@ fun MovieDetailsComposable(movie: MovieData) {
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)
             ) {
-                Image(
-                    painter = rememberAsyncImagePainter("https://image.tmdb.org/t/p/w342${movie.poster_path}"),
-                    contentDescription = "Movie Poster",
-                    modifier = Modifier
-                        .height(200.dp)
-                        .width(130.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .border(
-                            2.dp,
-                            colorResource(id = R.color.accent),
-                            shape = RoundedCornerShape(8.dp)
-                        ),
-                    contentScale = ContentScale.Crop
-                )
+                    Image(
+                        painter = rememberAsyncImagePainter("https://image.tmdb.org/t/p/w342${movie.poster_path}"),
+                        contentDescription = "Movie Poster",
+                        modifier = Modifier
+                            .height(200.dp)
+                            .width(130.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .border(
+                                2.dp,
+                                colorResource(id = R.color.accent),
+                                shape = RoundedCornerShape(8.dp)
+                            ),
+                        contentScale = ContentScale.Crop
+                    )
 
                 Spacer(modifier = Modifier.width(20.dp))
 

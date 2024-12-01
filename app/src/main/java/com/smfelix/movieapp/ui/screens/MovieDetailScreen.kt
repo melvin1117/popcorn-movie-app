@@ -22,9 +22,8 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun MovieViewPager(selectedMovieId: Long, viewModel: MovieViewModel) {
+fun MovieViewPager(selectedMovieId: Long, viewModel: MovieViewModel, favorites: List<Long>, onFavoriteToggle: (Long) -> Unit) {
     val movies = viewModel.movieList.value
-
 
     if (movies.isEmpty()) {
         Box(
@@ -70,9 +69,7 @@ fun MovieViewPager(selectedMovieId: Long, viewModel: MovieViewModel) {
                     },
                     selectedContentColor = colorResource(id = R.color.accent),
                     unselectedContentColor = colorResource(id = R.color.lightGray),
-                    text = {
-                        Text(movie.title)
-                    }
+                    text = { Text(movie.title) }
                 )
             }
         }
@@ -82,7 +79,12 @@ fun MovieViewPager(selectedMovieId: Long, viewModel: MovieViewModel) {
             state = pagerState,
             modifier = Modifier.fillMaxHeight()
         ) { page ->
-            MovieDetailsComposable(movie = movies[page])
+            MovieDetailsComposable(
+                movie = movies[page],
+                isFavorite = favorites.contains(movies[page].id),
+                onFavoriteToggle = { onFavoriteToggle(movies[page].id) }
+            )
         }
     }
 }
+

@@ -19,6 +19,8 @@ class MovieViewModel(private val category: String) : ViewModel() {
     val selectedMovies = mutableStateOf(mutableStateListOf<MovieData>())
     val isLoading = mutableStateOf(false)
     var selectedMovieId = mutableStateOf<Long?>(null)
+    val favoriteMovies = mutableStateOf(mutableStateListOf<Long>()) // Holds IDs of favorite movies
+
 
     init {
         fetchMoviesIfNeeded()
@@ -69,5 +71,17 @@ class MovieViewModel(private val category: String) : ViewModel() {
             val duplicatedMovie = originalMovie.copy(id = UUID.randomUUID().mostSignificantBits and Long.MAX_VALUE)
             movieList.value.add(index + 1, duplicatedMovie)
         }
+    }
+
+    fun toggleFavorite(movieId: Long) {
+        if (favoriteMovies.value.contains(movieId)) {
+            favoriteMovies.value.remove(movieId)
+        } else {
+            favoriteMovies.value.add(movieId)
+        }
+    }
+
+    fun isFavorite(movieId: Long): Boolean {
+        return favoriteMovies.value.contains(movieId)
     }
 }

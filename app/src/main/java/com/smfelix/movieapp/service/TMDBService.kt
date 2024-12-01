@@ -1,11 +1,13 @@
 package com.smfelix.movieapp.service
 
 import com.smfelix.movieapp.BuildConfig
+import com.smfelix.movieapp.data.MovieData
 import com.smfelix.movieapp.data.MovieResponse
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Path
 
 interface TMDBApiService {
     @GET("movie/popular")
@@ -16,6 +18,9 @@ interface TMDBApiService {
 
     @GET("movie/now_playing")
     suspend fun getNowPlayingMovies(): MovieResponse
+
+    @GET("movie/{movie_id}")
+    suspend fun getMovieDetails(@Path("movie_id") movieId: Long): MovieData
 }
 
 fun provideTMDBService(): TMDBApiService {

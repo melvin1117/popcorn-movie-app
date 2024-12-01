@@ -8,10 +8,12 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.NavigationBarItemColors
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -23,7 +25,8 @@ fun BottomNavBar(navController: NavController) {
     val items = listOf(
         Triple("popular", "Popular", Icons.Filled.Movie),
         Triple("top_rated", "Top Rated", Icons.Filled.Star),
-        Triple("now_playing", "Now Playing", Icons.Filled.PlayArrow)
+        Triple("now_playing", "Now Playing", Icons.Filled.PlayArrow),
+        Triple("favorites", "Favorites", Icons.Filled.Favorite) // Add Favorites
     )
 
     // Get the current route and arguments
@@ -34,9 +37,13 @@ fun BottomNavBar(navController: NavController) {
     NavigationBar(containerColor = colorResource(id = R.color.accent)) {
         items.forEach { (route, label, icon) ->
             NavigationBarItem(
-                selected = currentCategory == route,
+                selected = (currentCategory == route || (route == "favorites" && currentBackStackEntry?.destination?.route == "favorites")),
                 onClick = {
-                    if (currentCategory != route) {
+                    if (route == "favorites") {
+                        navController.navigate("favorites") {
+                            popUpTo("movie_list") { inclusive = false }
+                        }
+                    } else if (currentCategory != route) {
                         navController.navigate("movie_list/$route") {
                             popUpTo("movie_list") { inclusive = false }
                         }

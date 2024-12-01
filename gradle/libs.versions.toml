@@ -6,6 +6,8 @@ appcompat = "1.7.0"
 coilCompose = "2.2.2"
 composeVersion = "1.5.2"
 coreKtx = "1.13.1"
+firebaseDatabase = "21.0.0"
+firebaseStorage = "21.0.1"
 foundation = "1.7.4"
 gson = "2.10.1"
 kotlin = "1.9.0"
@@ -36,6 +38,8 @@ androidx-ui = { module = "androidx.compose.ui:ui", version.ref = "composeVersion
 androidx-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "composeVersion" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
+firebase-database = { module = "com.google.firebase:firebase-database", version.ref = "firebaseDatabase" }
+firebase-storage = { module = "com.google.firebase:firebase-storage", version.ref = "firebaseStorage" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 material = { module = "com.google.android.material:material", version.ref = "material" }

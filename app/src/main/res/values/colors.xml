@@ -3,9 +3,11 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="bgGray">#2b2b2b</color>
+    <color name="bgGrayOverlay">#83ADADAD</color>
     <color name="bgDarkGray">#202020</color>
     <color name="lightGray">#949495</color>
     <color name="accent">#1e9ef3</color>
     <color name="star">#ffae38</color>
     <color name="bgStar">#FFE2B7</color>
+    <color name="red">#E60505</color>
 </resources>

@@ -12,15 +12,19 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.google.firebase.auth.FirebaseAuth
 import com.smfelix.movieapp.R
+import com.smfelix.movieapp.data.User
+import com.smfelix.movieapp.service.AuthService
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(navController: NavController, authService: AuthService, onLogin: (User) -> Unit) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+    var generalError by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
 
     Column(
@@ -33,8 +37,7 @@ fun LoginScreen(navController: NavController) {
         Image(
             painter = painterResource(id = R.drawable.ic_launcher_round),
             contentDescription = "App Logo",
-            modifier = Modifier
-                .size(72.dp)
+            modifier = Modifier.size(72.dp)
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
@@ -44,11 +47,11 @@ fun LoginScreen(navController: NavController) {
         )
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Input Fields
         TextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = { email = it; emailError = null },
             label = { Text("Email") },
+            isError = emailError != null,
             modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.colors(
                 cursorColor = colorResource(id = R.color.accent),
@@ -57,12 +60,17 @@ fun LoginScreen(navController: NavController) {
                 focusedIndicatorColor = colorResource(id = R.color.accent)
             )
         )
+        if (emailError != null) {
+            Text(text = emailError!!, color = colorResource(id = R.color.red), fontSize = 12.sp)
+        }
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Password Field
         TextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = { password = it; passwordError = null },
             label = { Text("Password") },
+            isError = passwordError != null,
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation(),
             colors = TextFieldDefaults.colors(
@@ -72,31 +80,54 @@ fun LoginScreen(navController: NavController) {
                 focusedIndicatorColor = colorResource(id = R.color.accent)
             )
         )
+        if (passwordError != null) {
+            Text(text = passwordError!!, color = colorResource(id = R.color.red), fontSize = 12.sp)
+        }
         Spacer(modifier = Modifier.height(16.dp))
 
-        errorMessage?.let {
-            Text(
-                text = it,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(8.dp)
-            )
+        generalError?.let {
+            Text(text = it, color = colorResource(id = R.color.red), fontSize = 14.sp, modifier = Modifier.padding(bottom = 8.dp))
         }
 
         // Login Button
         Button(
             onClick = {
-                FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
-                            navController.navigate("movie_list/popular") {
-                                popUpTo("login") { inclusive = true }
+                emailError = if (email.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    "Invalid email address"
+                } else null
+
+                passwordError = if (password.isBlank()) {
+                    "Password cannot be empty"
+                } else null
+
+                if (emailError == null && passwordError == null) {
+                    authService.loginUser(email, password) { success, message ->
+                        if (success) {
+                            authService.getUserDetails()?.get()?.addOnSuccessListener { snapshot ->
+                                val user = snapshot.getValue(User::class.java) ?: User(
+                                    userId = authService.getCurrentUser()?.uid ?: "",
+                                    name = "",
+                                    email = email,
+                                    profilePhotoUrl = null,
+                                    dateOfBirth = "",
+                                    gender = "",
+                                    mobileNumber = "",
+                                    shortBio = "",
+                                    favorites = emptyList()
+                                )
+                                onLogin(user)
+                                Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
+                                navController.navigate("movie_list/popular") {
+                                    popUpTo("login") { inclusive = true }
+                                }
+                            }?.addOnFailureListener {
+                                generalError = "Failed to fetch user data."
                             }
                         } else {
-                            errorMessage = task.exception?.localizedMessage ?: "Login failed"
-                            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                            generalError = message
                         }
                     }
+                }
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.accent))
@@ -105,8 +136,6 @@ fun LoginScreen(navController: NavController) {
         }
 
         Spacer(modifier = Modifier.height(8.dp))
-
-        // Navigate to Signup
         TextButton(onClick = { navController.navigate("signup") }) {
             Text(text = "Don't have an account? Sign Up", color = colorResource(id = R.color.accent))
         }
